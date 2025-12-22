@@ -1,0 +1,467 @@
+openapi: 3.0.3
+info:
+  title: SL-Transit (SriVibes) API
+  version: 1.0.0
+  description: |
+    Production-grade API contract for SL-Transit (SriVibes).
+    Includes Auth, Trips/Bus search, Seat locking, Booking, QR verification,
+    Admin override, Payments (PayHere webhook) and conventions for Socket.IO realtime events.
+servers:
+  - url: https://api.example.com
+    description: Production server (replace with actual URL)
+  - url: http://localhost:4000
+    description: Local development
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      example:
+        code: 400
+        message: Invalid request
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [PASSENGER, DRIVER, BUSINESS, ADMIN]
+      required: [id, name, email]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT access token
+
+    Route:
+      type: object
+      properties:
+        id: { type: string }
+        startPoint: { type: string }
+        endPoint: { type: string }
+
+    Bus:
+      type: object
+      properties:
+        id: { type: string }
+        regNumber: { type: string }
+        busName: { type: string }
+        totalSeats: { type: integer }
+
+    Trip:
+      type: object
+      properties:
+        id: { type: string }
+        bus: { $ref: '#/components/schemas/Bus' }
+        route: { $ref: '#/components/schemas/Route' }
+        startTime: { type: string, format: date-time }
+        price: { type: number }
+        seatsAvailable: { type: integer }
+
+    TripSeat:
+      type: object
+      properties:
+        seatNumber: { type: integer }
+        status:
+          type: string
+          enum: [AVAILABLE, LOCKED, BOOKED]
+
+    Booking:
+      type: object
+      properties:
+        id: { type: string }
+        referenceCode: { type: string }
+        userId: { type: string }
+        tripId: { type: string }
+        seatNumber: { type: integer }
+        pickupPoint: { type: string }
+        dropPoint: { type: string }
+        amount: { type: number }
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
+        qrCode: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Payment:
+      type: object
+      properties:
+        id: { type: string }
+        bookingId: { type: string }
+        provider: { type: string }
+        providerRef: { type: string }
+        amount: { type: number }
+        status:
+          type: string
+          enum: [PENDING, SUCCESS, FAILED]
+        createdAt: { type: string, format: date-time }
+
+    LocationSnapshot:
+      type: object
+      properties:
+        id: { type: string }
+        tripId: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        speed: { type: number }
+        recordedAt: { type: string, format: date-time }
+
+    AdminOverride:
+      type: object
+      properties:
+        id: { type: string }
+        action: { type: string }
+        targetId: { type: string }
+        reason: { type: string }
+        createdBy: { type: string }
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, EXECUTED]
+        createdAt: { type: string, format: date-time }
+
+    AdminOverrideApproval:
+      type: object
+      properties:
+        id: { type: string }
+        overrideId: { type: string }
+        adminId: { type: string }
+        decision: { type: boolean }
+        comment: { type: string }
+        decidedAt: { type: string, format: date-time }
+
+  parameters:
+    tripIdParam:
+      name: tripId
+      in: path
+      required: true
+      schema:
+        type: string
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                phone: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      summary: User login (email/password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Auth success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Unauthorized
+
+  /trips:
+    get:
+      summary: Search trips
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: string }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string }
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trip'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            X-RateLimit-Limit: { schema: { type: integer } }
+            X-RateLimit-Remaining: { schema: { type: integer } }
+            X-RateLimit-Reset: { schema: { type: integer } }
+
+  /trips/{tripId}/seats:
+    get:
+      summary: Get seat map for a trip
+      parameters:
+        - $ref: '#/components/parameters/tripIdParam'
+      responses:
+        '200':
+          description: Seats
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TripSeat' }
+
+  /bookings/lock:
+    post:
+      summary: Lock a seat (uses Redis lock under the hood)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tripId: { type: string }
+                seatNumber: { type: integer }
+      responses:
+        '200':
+          description: Lock acquired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lockId: { type: string }
+                  expiresAt: { type: string, format: date-time }
+        '409':
+          description: Seat already locked/booked
+
+  /bookings/confirm:
+    post:
+      summary: Confirm booking (completes payment flow)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lockId: { type: string }
+                paymentMethod: { type: string }
+                paymentDetails: { type: object }
+      responses:
+        '201':
+          description: Booking confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Invalid or expired lock
+
+  /bookings/{referenceCode}:
+    get:
+      summary: Get booking by reference code
+      parameters:
+        - name: referenceCode
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: Not found
+
+  /bookings:
+    get:
+      summary: Get bookings for current user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Booking' }
+
+  /conductor/verify:
+    post:
+      summary: Verify a booking from conductor scan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                referenceCode: { type: string }
+      responses:
+        '200':
+          description: Valid booking
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid: { type: boolean }
+                  booking: { $ref: '#/components/schemas/Booking' }
+        '404':
+          description: Invalid reference
+
+  /payments/webhook:
+    post:
+      summary: PayHere webhook endpoint (public)
+      description: |-
+        PayHere will POST payment events here. Validate with merchant secret and
+        persist to `WebhookLog` and update `Payment` record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: OK
+
+  /admin/overrides:
+    post:
+      summary: Request an admin override (creates a multi-sig request)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action: { type: string }
+                targetId: { type: string }
+                reason: { type: string }
+      responses:
+        '201':
+          description: Override created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOverride'
+
+  /admin/overrides/{overrideId}/approve:
+    post:
+      summary: Approve or reject an override
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: overrideId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision: { type: boolean }
+                comment: { type: string }
+      responses:
+        '200':
+          description: Approval recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOverrideApproval'
+
+  /locations/{tripId}/snapshot:
+    get:
+      summary: Get latest historical snapshots for a trip
+      parameters:
+        - $ref: '#/components/parameters/tripIdParam'
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: List of snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LocationSnapshot' }
+
+tags:
+  - name: Auth
+  - name: Trips
+  - name: Bookings
+  - name: Payments
+  - name: Admin
+
+  
+  

@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------- USER SYSTEM --------------
+model User {
+  id          String     @id @default(uuid())
+  name        String
+  email       String     @unique
+  phone       String
+  role        Role       @default(PASSENGER)
+
+  bookings    Booking[]
+  createdAt   DateTime   @default(now())
+}
+
+enum Role {
+  PASSENGER
+  DRIVER
+  BUSINESS
+  ADMIN
+}
+
+// -------------- BUS & ROUTES --------------
+model Bus {
+  id           String   @id @default(uuid())
+  regNumber    String   @unique
+  busName      String
+  totalSeats   Int
+
+  trips        Trip[]
+}
+
+model Route {
+  id           String   @id @default(uuid())
+  startPoint   String
+  endPoint     String
+  
+  trips        Trip[]
+}
+
+// -------------- TRIP & SEATS --------------
+model Trip {
+  id        String   @id @default(uuid())
+  busId     String
+  routeId   String
+  startTime DateTime
+  price     Float
+
+  bus        Bus      @relation(fields: [busId], references: [id])
+  route      Route    @relation(fields: [routeId], references: [id])
+
+  bookings   Booking[]
+  seats      TripSeat[]
+}
+
+model TripSeat {
+  id         String   @id @default(uuid())
+  tripId     String
+  seatNumber Int
+  status     SeatStatus @default(AVAILABLE)
+
+  trip      Trip @relation(fields: [tripId], references: [id])
+
+  @@unique([tripId, seatNumber])
+}
+
+enum SeatStatus {
+  AVAILABLE
+  LOCKED
+  BOOKED
+}
+
+// -------------- BOOKINGS --------------
+model Booking {
+  id              String   @id @default(uuid())
+  referenceCode   String   @unique
+  userId          String
+  tripId          String
+  seatNumber      Int
+  pickupPoint     String
+  dropPoint        String
+  amount          Float
+
+  status          BookingStatus @default(PENDING)
+
+  qrCode          String
+  createdAt       DateTime @default(now())
+
+  user            User    @relation(fields: [userId], references: [id])
+  trip            Trip    @relation(fields: [tripId], references: [id])
+  payment         Payment?
+
+  @@index([tripId])
+  @@index([userId])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+// -------------- PAYMENT (PAYHERE) --------------
+model Payment {
+  id                String   @id @default(uuid())
+  bookingId         String   @unique
+  provider          String   @default("PAYHERE")
+  providerRef       String?
+  amount            Float
+  status            PaymentStatus
+  createdAt         DateTime @default(now())
+
+  booking          Booking @relation(fields: [bookingId], references: [id])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// -------------- LOCATION SNAPSHOT (NOT LIVE) --------------
+model LocationSnapshot {
+  id         String   @id @default(uuid())
+  tripId     String
+  lat        Float
+  lng        Float
+  speed      Float?
+  recordedAt DateTime @default(now())
+
+  @@index([tripId])
+}
+
+// -------------- ADMIN OVERRIDE --------------
+model AdminOverride {
+  id         String   @id @default(uuid())
+  tripId     String
+  reason     String
+  status     OverrideStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+
+  approvals  AdminOverrideApproval[]
+}
+
+model AdminOverrideApproval {
+  id         String @id @default(uuid())
+  overrideId String
+  adminId    String
+
+  override AdminOverride @relation(fields: [overrideId], references: [id])
+
+  @@unique([overrideId, adminId])
+}
+
+enum OverrideStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// -------------- AUDIT LOG --------------
+model AdminAuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  action    String
+  note      String
+  createdAt DateTime @default(now())
+}

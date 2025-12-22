@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: srivibes
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../backend:/usr/src/app
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+
+  web:
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../apps/web:/usr/src/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8081:8080"
+
+volumes:
+  postgres_data:
