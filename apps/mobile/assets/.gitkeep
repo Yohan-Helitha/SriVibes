@@ -1,0 +1,9 @@
+# Add your app icons and splash screens here
+# 
+# Required files for production:
+# - icon.png (1024x1024)
+# - adaptive-icon.png (Android, 1024x1024)
+# - splash.png (2048x2048)
+# - favicon.png (48x48)
+#
+# For now, these are optional during development
