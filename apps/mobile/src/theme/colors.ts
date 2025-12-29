@@ -8,4 +8,11 @@ export const colors = {
   success: '#4CAF50',
   warning: '#FFC107',
   error: '#F44336',
+  // Additional colors from design
+  red: '#FF0000',
+  lightBlue: '#D3E6FF',
+  veryLightBlue: '#DAF2FF',
+  lightGray: '#EAEAEA',
+  black: '#000000',
+  white: '#FFFFFF',
 };

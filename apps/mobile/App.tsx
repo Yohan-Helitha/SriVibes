@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LoadingScreen from './src/screens/LoadingScreen';
 import Onboarding01 from './src/screens/Onboarding01';
 import Onboarding02 from './src/screens/Onboarding02';
 import LoginScreen from './src/screens/LoginScreen';
@@ -9,6 +10,12 @@ import LoginScreen from './src/screens/LoginScreen';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [showLoading, setShowLoading] = useState(true);
+
+  if (showLoading) {
+    return <LoadingScreen onFinish={() => setShowLoading(false)} />;
+  }
+
   return (
     <NavigationContainer>
       <StatusBar style="light" />
