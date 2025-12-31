@@ -7,6 +7,7 @@ import LoadingScreen from './src/screens/LoadingScreen';
 import Onboarding01 from './src/screens/Onboarding01';
 import Onboarding02 from './src/screens/Onboarding02';
 import LoginScreen from './src/screens/LoginScreen';
+import HomeScreen from './src/screens/HomeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,7 +52,8 @@ export default function App() {
       >
         <Stack.Screen name="Onboarding01" component={Onboarding01Screen} />
         <Stack.Screen name="Onboarding02" component={Onboarding02Screen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Login" component={LoginScreenWrapper} />
+        <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -64,4 +66,8 @@ function Onboarding01Screen({ navigation }: any) {
 
 function Onboarding02Screen({ navigation }: any) {
   return <Onboarding02 onNext={() => navigation.navigate('Login')} />;
+}
+
+function LoginScreenWrapper({ navigation }: any) {
+  return <LoginScreen onLogin={() => navigation.navigate('Home')} />;
 }
