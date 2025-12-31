@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Font from 'expo-font';
 import LoadingScreen from './src/screens/LoadingScreen';
 import Onboarding01 from './src/screens/Onboarding01';
 import Onboarding02 from './src/screens/Onboarding02';
@@ -11,6 +12,28 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [showLoading, setShowLoading] = useState(true);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          'Montserrat': require('./assets/fonts/Montserrat-Bold.ttf'),
+          'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
+          'Montserrat-SemiBold': require('./assets/fonts/Montserrat-SemiBold.ttf'),
+        });
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+        setFontsLoaded(true); // Continue even if fonts fail to load
+      }
+    }
+    loadFonts();
+  }, []);
+
+  if (!fontsLoaded) {
+    return null; // Or a simple loading indicator
+  }
 
   if (showLoading) {
     return <LoadingScreen onFinish={() => setShowLoading(false)} />;

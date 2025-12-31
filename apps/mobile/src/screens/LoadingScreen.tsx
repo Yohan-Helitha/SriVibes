@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, ViewProps } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 
@@ -75,6 +75,7 @@ export default function LoadingScreen({ onFinish }: { onFinish: () => void }) {
       colors={[colors.primary, colors.primary]}
       style={styles.container}
     >
+      {/* @ts-ignore */}
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {!showSecondScreen ? (
           // First Screen: "SRIVibes" without red dot
@@ -89,6 +90,7 @@ export default function LoadingScreen({ onFinish }: { onFinish: () => void }) {
             <Text style={styles.greeting}>Ayubowan!</Text>
             <View style={styles.brandContainer}>
               <Text style={styles.brand}>SRIVibes</Text>
+              {/* @ts-ignore */}
               <Animated.View
                 style={[
                   styles.animatedDot,
@@ -125,6 +127,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     marginBottom: 8,
     letterSpacing: 1,
+    fontFamily: 'Montserrat',
   },
   brandContainer: {
     flexDirection: 'row',
@@ -135,6 +138,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.white,
     letterSpacing: 1,
+    fontFamily: 'Montserrat',
   },
   staticDot: {
     width: 8,
