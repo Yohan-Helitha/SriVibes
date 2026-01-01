@@ -1,11 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, ViewProps } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
 export default function LoadingScreen({ onFinish }: { onFinish: () => void }) {
+  const [fontsLoaded] = useFonts({
+    'Montserrat-ExtraBold': require('../../assets/fonts/Montserrat-ExtraBold.ttf'),
+    'Montserrat-SemiBold': require('../../assets/fonts/Montserrat-SemiBold.ttf'),
+    'Montserrat-Bold': require('../../assets/fonts/Montserrat-Bold.ttf'),
+  });
+
   const [showSecondScreen, setShowSecondScreen] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const dotScale = useRef(new Animated.Value(1)).current;
@@ -70,6 +77,10 @@ export default function LoadingScreen({ onFinish }: { onFinish: () => void }) {
     };
   }, []);
 
+  if (!fontsLoaded) {
+    return null; // or a simple loading indicator
+  }
+
   return (
     <LinearGradient
       colors={[colors.primary, colors.primary]}
@@ -81,7 +92,8 @@ export default function LoadingScreen({ onFinish }: { onFinish: () => void }) {
           // First Screen: "SRIVibes" without red dot
           <View style={styles.textContainer}>
             <View style={styles.brandContainer}>
-              <Text style={styles.brand}>SRIVibes</Text>
+              <Text style={styles.brandSRI}>SRI</Text>
+              <Text style={styles.brandVibes}>Vibes</Text>
             </View>
           </View>
         ) : (
@@ -89,7 +101,8 @@ export default function LoadingScreen({ onFinish }: { onFinish: () => void }) {
           <View style={styles.textContainer}>
             <Text style={styles.greeting}>Ayubowan!</Text>
             <View style={styles.brandContainer}>
-              <Text style={styles.brand}>SRIVibes</Text>
+              <Text style={styles.brandSRI}>SRI</Text>
+              <Text style={styles.brandVibes}>Vibes</Text>
               {/* @ts-ignore */}
               <Animated.View
                 style={[
@@ -122,23 +135,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   greeting: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 40,
+    fontWeight: '700',
     color: colors.white,
     marginBottom: 8,
     letterSpacing: 1,
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat-Bold',
   },
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  brand: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  brandSRI: {
+    fontSize: 48,
     color: colors.white,
     letterSpacing: 1,
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat-ExtraBold',
+  },
+  brandVibes: {
+    fontSize: 48,
+    color: colors.white,
+    letterSpacing: 1,
+    fontFamily: 'Montserrat-SemiBold',
   },
   staticDot: {
     width: 8,

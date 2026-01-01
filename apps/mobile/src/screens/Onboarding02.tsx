@@ -1,11 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Onboarding02({ onNext }: { onNext: () => void }) {
+  const [fontsLoaded] = useFonts({
+    'Montserrat-ExtraBold': require('../../assets/fonts/Montserrat-ExtraBold.ttf'),
+    'Montserrat-SemiBold': require('../../assets/fonts/Montserrat-SemiBold.ttf'),
+    'Montserrat-Bold': require('../../assets/fonts/Montserrat-Bold.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
   return (
     <LinearGradient
       colors={[colors.primary, colors.primary]}
@@ -71,9 +81,9 @@ const styles = StyleSheet.create({
   },
   logo: {
     fontSize: 32,
-    fontWeight: 'bold',
     color: colors.text,
     letterSpacing: 2,
+    fontFamily: 'Montserrat-Bold',
   },
   mainContent: {
     flex: 1,
@@ -106,10 +116,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
     color: colors.text,
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
   },
   subtitle: {
     fontSize: 16,
@@ -117,6 +127,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     opacity: 0.9,
+    fontFamily: 'Montserrat-SemiBold',
   },
   bottomContainer: {
     alignItems: 'center',
@@ -151,11 +162,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.primary,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Montserrat-SemiBold',
   },
   skipText: {
     color: colors.text,
     fontSize: 16,
     opacity: 0.8,
+    fontFamily: 'Montserrat-SemiBold',
   },
 });

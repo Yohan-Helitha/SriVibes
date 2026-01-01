@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
@@ -40,6 +41,11 @@ const HOTELS = [
 ];
 
 export default function HomeScreen() {
+  const [fontsLoaded] = useFonts({
+    'Montserrat-ExtraBold': require('../../assets/fonts/Montserrat-ExtraBold.ttf'),
+    'Montserrat-SemiBold': require('../../assets/fonts/Montserrat-SemiBold.ttf'),
+  });
+
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -55,13 +61,20 @@ export default function HomeScreen() {
     setFavorites(newFavorites);
   };
 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       
       {/* Header Section */}
       <View style={styles.header}>
-        <Text style={styles.logo}>SRIVibes</Text>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoSRI}>SRI</Text>
+          <Text style={styles.logoVibes}>Vibes</Text>
+        </View>
         <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications" size={24} color={colors.white} />
         </TouchableOpacity>
@@ -284,11 +297,19 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-  logo: {
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoSRI: {
     fontSize: 28,
-    fontWeight: '700',
     color: colors.white,
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat-ExtraBold',
+  },
+  logoVibes: {
+    fontSize: 28,
+    color: colors.white,
+    fontFamily: 'Montserrat-SemiBold',
   },
   notificationButton: {
     padding: 8,
