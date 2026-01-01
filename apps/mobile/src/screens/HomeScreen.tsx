@@ -289,13 +289,10 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.primary,
     paddingTop: 50,
-    paddingBottom: 16,
+    paddingBottom: 30,
     paddingHorizontal: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    justifyContent: 'center',
   },
   logoContainer: {
     flexDirection: 'row',
@@ -312,6 +309,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-SemiBold',
   },
   notificationButton: {
+    position: 'absolute',
+    right: 20,
+    top: 50,
     padding: 8,
   },
   categorySection: {
@@ -320,6 +320,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 16,
     backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: -20,
   },
   categoryButton: {
     alignItems: 'center',
