@@ -13,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
+import AccountScreen from './AccountScreen';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -151,53 +152,65 @@ export default function HomeScreen() {
         ))}
       </ScrollView>
 
-      {/* Hotel Cards */}
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
-      >
-        <View style={styles.cardsGrid}>
-          {HOTELS.map((hotel) => (
-            <View key={hotel.id} style={styles.card}>
-              <View style={styles.cardImageContainer}>
-                <Image 
-                  source={{ uri: hotel.image }} 
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  style={styles.favoriteButton}
-                  onPress={() => toggleFavorite(hotel.id)}
-                >
-                  <Ionicons
-                    name={favorites.has(hotel.id) ? 'heart' : 'heart-outline'}
-                    size={24}
-                    color={favorites.has(hotel.id) ? '#FF0000' : '#000'}
+      {/* Main content area (switches by bottom tab) */}
+      {activeTab === 'home' ? (
+        <ScrollView 
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.contentContainer}
+        >
+          <View style={styles.cardsGrid}>
+            {HOTELS.map((hotel) => (
+              <View key={hotel.id} style={styles.card}>
+                <View style={styles.cardImageContainer}>
+                  <Image 
+                    source={{ uri: hotel.image }} 
+                    style={styles.cardImage}
+                    resizeMode="cover"
                   />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {hotel.name}
-                </Text>
-                <Text style={styles.cardLocation}>{hotel.location}</Text>
-                <View style={styles.cardFooter}>
-                  {hotel.rating && (
-                    <View style={styles.ratingBadge}>
-                      <Text style={styles.ratingText}>{hotel.rating}</Text>
+                  <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={() => toggleFavorite(hotel.id)}
+                  >
+                    <Ionicons
+                      name={favorites.has(hotel.id) ? 'heart' : 'heart-outline'}
+                      size={24}
+                      color={favorites.has(hotel.id) ? '#FF0000' : '#000'}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle} numberOfLines={2}>
+                    {hotel.name}
+                  </Text>
+                  <Text style={styles.cardLocation}>{hotel.location}</Text>
+                  <View style={styles.cardFooter}>
+                    {hotel.rating && (
+                      <View style={styles.ratingBadge}>
+                        <Text style={styles.ratingText}>{hotel.rating}</Text>
+                      </View>
+                    )}
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.fromText}>from</Text>
+                      <Text style={styles.priceText}>LKR {hotel.price}</Text>
                     </View>
-                  )}
-                  <View style={styles.priceContainer}>
-                    <Text style={styles.fromText}>from</Text>
-                    <Text style={styles.priceText}>LKR {hotel.price}</Text>
                   </View>
                 </View>
               </View>
-            </View>
-          ))}
+            ))}
+          </View>
+        </ScrollView>
+      ) : activeTab === 'favourite' ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>No favourites yet.</Text>
         </View>
-      </ScrollView>
+      ) : activeTab === 'bookings' ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>No bookings yet.</Text>
+        </View>
+      ) : activeTab === 'account' ? (
+        <AccountScreen />
+      ) : null}
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>

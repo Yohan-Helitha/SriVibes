@@ -15,6 +15,12 @@ model User {
   phone       String
   role        Role       @default(PASSENGER)
 
+  // If the user is an owner, `ownerType` classifies what kind of owner they are
+  ownerType   OwnerType?
+
+  // Businesses owned by this user (optional)
+  businesses  Business[]
+
   bookings    Booking[]
   createdAt   DateTime   @default(now())
 }
@@ -22,8 +28,17 @@ model User {
 enum Role {
   PASSENGER
   DRIVER
-  BUSINESS
+  OWNER
   ADMIN
+}
+
+// Detailed owner categories for business users (bus owners, hotel owners, etc.)
+enum OwnerType {
+  BUS_OWNER
+  HOTEL_OWNER
+  BRANCH_MANAGER
+  RESTAURANT_OWNER
+  SHOP_OWNER
 }
 
 // -------------- BUS & ROUTES --------------
@@ -172,4 +187,19 @@ model AdminAuditLog {
   action    String
   note      String
   createdAt DateTime @default(now())
+}
+
+// Generic Business entity for owners. Specific relations (buses, places)
+// can reference this model (e.g., Bus.businessId) in future migrations.
+model Business {
+  id         String   @id @default(uuid())
+  name       String
+  ownerId    String
+  type       OwnerType
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  owner      User     @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId])
 }
