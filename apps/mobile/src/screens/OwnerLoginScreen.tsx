@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { colors } from '../theme/colors';
 
 type Props = {
   onSuccess: (payload: { ownerId: string; ownerType: string }) => void;

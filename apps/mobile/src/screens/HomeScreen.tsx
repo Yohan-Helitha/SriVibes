@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
-import AccountScreen from './AccountScreen';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -51,6 +51,7 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('home');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const navigation = useNavigation<any>();
 
   const toggleFavorite = (id: string) => {
     const newFavorites = new Set(favorites);
@@ -61,6 +62,13 @@ export default function HomeScreen() {
     }
     setFavorites(newFavorites);
   };
+
+  // Reset activeTab to 'home' whenever the screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      setActiveTab('home');
+    }, [])
+  );
 
   if (!fontsLoaded) {
     return null;
@@ -208,8 +216,6 @@ export default function HomeScreen() {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text>No bookings yet.</Text>
         </View>
-      ) : activeTab === 'account' ? (
-        <AccountScreen />
       ) : null}
 
       {/* Bottom Navigation */}
@@ -273,7 +279,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => setActiveTab('account')}
+          onPress={() => { setActiveTab('account'); navigation.navigate('Account'); }}
         >
           <Ionicons
             name={activeTab === 'account' ? 'person' : 'person-outline'}
