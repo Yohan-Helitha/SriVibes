@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { colors } from '../theme/colors';
 import OwnerLoginScreen from './OwnerLoginScreen';
-import OwnerDashboardScreen from './OwnerDashboardScreen';
+import BusOwnerDashboardScreen from './BusOwnerDashboardScreen';
 
 export default function AccountScreen() {
   const navigation = useNavigation<any>();
@@ -28,7 +28,7 @@ export default function AccountScreen() {
           <Text style={styles.logoVibes}>Vibes</Text>
         </View>
         <TouchableOpacity style={styles.notificationButton}>
-          <Ionicons name="notifications" size={20} color={colors.white} />
+          <Ionicons name="notifications" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
 
@@ -187,7 +187,7 @@ export default function AccountScreen() {
       </Modal>
 
       <Modal visible={showDashboard} animationType="slide">
-        <OwnerDashboardScreen onClose={() => setShowDashboard(false)} />
+        <BusOwnerDashboardScreen onClose={() => setShowDashboard(false)} />
       </Modal>
     </View>
   );
@@ -213,11 +213,11 @@ const styles = StyleSheet.create({
   ownerButton: { marginLeft: 12, backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   ownerButtonText: { color: colors.white, fontWeight: '600' },
   /* header matching HomeScreen */
-  appHeader: { backgroundColor: colors.primary, paddingTop: 44, paddingBottom: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 12},
+  appHeader: { backgroundColor: colors.primary, paddingTop: 50, paddingBottom: 30, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center'},
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logoSRI: { fontSize: 28, color: colors.white, fontWeight: '800' },
-  logoVibes: { fontSize: 28, color: colors.white, marginLeft: 4, fontWeight: '600' },
-  notificationButton: { position: 'absolute', right: 16, top: 50, padding: 8 },
+  logoSRI: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-ExtraBold' },
+  logoVibes: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-SemiBold', marginLeft: 4 },
+  notificationButton: { position: 'absolute', right: 20, top: 50, padding: 8 },
   contentContainer: { backgroundColor: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, marginTop: -20, flex: 1 },
   bottomNav: {
     flexDirection: 'row',
