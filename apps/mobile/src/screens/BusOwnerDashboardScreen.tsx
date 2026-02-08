@@ -157,7 +157,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
         <Text style={styles.headerSub}>Dashboard</Text>
       </View>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 12 }}>
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity onPress={() => setCurrentPage('people')} style={[styles.tabButton, currentPage === 'people' && styles.tabActive]}>
             <Text style={[styles.tabText, currentPage === 'people' && styles.tabTextActive]}>Manage Drivers</Text>
@@ -174,7 +174,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
       {/* Page content switch */}
       {currentPage === 'people' && (
         <>
-          <View style={styles.sectionRow}>
+          <View style={[styles.sectionRow, { marginHorizontal: 12 }]}>
         <View style={styles.sectionCard}>
           <Text style={styles.cardTitle}>Drivers</Text>
           <Text style={styles.cardSub}>{drivers.length} registered</Text>
@@ -202,7 +202,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
       </View>
 
           {/* Lists: drivers & conductors with edit/delete */}
-          <View style={{ flexDirection: 'row', marginTop: 12 }}>
+          <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 12 }}>
           <View style={{ flex: 1, marginRight: 8 }}>
             <Text style={styles.sectionHeading}>Drivers</Text>
             {drivers.map((d) => (
@@ -267,7 +267,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
 
       {currentPage === 'buses' && (
         <>
-          <View style={{ marginTop: 12 }}>
+          <View style={{ marginTop: 12, marginHorizontal: 12 }}>
             <Text style={styles.sectionHeading}>Add / Manage Buses</Text>
             <TouchableOpacity style={styles.primaryButton} onPress={() => setShowAddBus(true)}>
               <Text style={styles.primaryButtonText}>Add Bus</Text>
@@ -336,7 +336,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
             </View>
           )}
 
-          <View style={{ marginTop: 12, flex: 1 }}>
+          <View style={{ marginTop: 12, flex: 1, marginHorizontal: 12 }}>
             <Text style={styles.sectionHeading}>Your Buses</Text>
             {buses.length === 0 ? (
               <Text style={{ color: '#666' }}>No buses yet</Text>
@@ -356,7 +356,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
       )}
 
       {currentPage === 'finance' && (
-        <View style={{ marginTop: 12, flex: 1 }}>
+        <View style={{ marginTop: 12, flex: 1, marginHorizontal: 12 }}>
           <Text style={styles.sectionHeading}>Finance</Text>
           <View style={{ flexDirection: 'row', marginBottom: 12 }}>
             <TouchableOpacity style={[styles.smallBtn, { marginRight: 8 }]} onPress={() => { /* filter today */ }}><Text style={styles.smallBtnText}>Today</Text></TouchableOpacity>
@@ -388,7 +388,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12, backgroundColor: colors.lightGray },
+  container: { flex: 1, backgroundColor: colors.lightGray },
   heading: { fontSize: 20, fontWeight: '700', marginBottom: 12, color: colors.textDark },
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between' },
   sectionCard: { backgroundColor: colors.white, padding: 12, borderRadius: 8, flex: 1, marginRight: 8 },
@@ -408,11 +408,11 @@ const styles = StyleSheet.create({
   tag: { backgroundColor: '#EEF6FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, marginRight: 8, marginBottom: 6 },
   listRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6, color: colors.textDark },
-  appHeader: { backgroundColor: colors.primary, paddingTop: 50, paddingBottom: 16, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 8, marginBottom: 12 },
+  appHeader: { backgroundColor: colors.primary, paddingTop: 50, paddingBottom: 30, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
   logoSRI: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-ExtraBold' },
-  logoVibes: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-SemiBold', marginLeft: 4 },
-  headerSub: { color: colors.white, marginTop: 6, fontSize: 14, opacity: 0.95 },
+  logoVibes: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-SemiBold' },
+  headerSub: { color: colors.white, marginTop: 6, fontSize: 14, opacity: 0.95, fontWeight: '500' },
   tabButton: { paddingVertical: 8, paddingHorizontal: 12, marginRight: 6, borderRadius: 8, backgroundColor: 'transparent' },
   tabActive: { backgroundColor: '#E8F4FF' },
   tabText: { color: colors.textDark, fontWeight: '600' },
