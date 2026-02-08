@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 type Props = { onClose: () => void; ownerType?: string };
 
-type Person = { id: string; name: string; phone?: string };
+type Person = { id: string; nic?: string; name: string; phone?: string; age?: string };
 type Bus = {
   id: string;
   expressName: string;
@@ -13,6 +13,8 @@ type Bus = {
   seats: number;
   routeNumber: string;
   passingCities: string[];
+  startPoint?: string;
+  endPoint?: string;
   turns: Array<{ start: string; end: string; conductorId?: string; driverId?: string }>;
 };
 
@@ -25,6 +27,9 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
   const [personName, setPersonName] = useState('');
   const [personPhone, setPersonPhone] = useState('');
   const [personRole, setPersonRole] = useState<'driver' | 'conductor'>('driver');
+  const [personNic, setPersonNic] = useState('');
+  const [personAge, setPersonAge] = useState('');
+  const [showPersonForm, setShowPersonForm] = useState(false);
 
   // Add Bus form state
   const [showAddBus, setShowAddBus] = useState(false);
@@ -40,14 +45,27 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
   const [turnsCount, setTurnsCount] = useState('');
   const [editingPersonId, setEditingPersonId] = useState<string | null>(null);
   const [editingBusId, setEditingBusId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<'people' | 'buses' | 'finance'>('people');
+  const [startPoint, setStartPoint] = useState('');
+  const [endPoint, setEndPoint] = useState('');
 
   const addPerson = () => {
     if (!personName.trim()) return;
-    const newPerson: Person = { id: `${Date.now()}`, name: personName.trim(), phone: personPhone.trim() };
-    if (personRole === 'driver') setDrivers((s) => [newPerson, ...s]);
-    else setConductors((s) => [newPerson, ...s]);
+    if (editingPersonId) {
+      const updated: Person = { id: editingPersonId, nic: personNic.trim(), name: personName.trim(), phone: personPhone.trim(), age: personAge.trim() };
+      if (personRole === 'driver') setDrivers((s) => s.map((p) => (p.id === editingPersonId ? updated : p)));
+      else setConductors((s) => s.map((p) => (p.id === editingPersonId ? updated : p)));
+      setEditingPersonId(null);
+    } else {
+      const newPerson: Person = { id: `${Date.now()}`, nic: personNic.trim(), name: personName.trim(), phone: personPhone.trim(), age: personAge.trim() };
+      if (personRole === 'driver') setDrivers((s) => [newPerson, ...s]);
+      else setConductors((s) => [newPerson, ...s]);
+    }
     setPersonName('');
     setPersonPhone('');
+    setPersonNic('');
+    setPersonAge('');
+    setShowPersonForm(false);
   };
 
   const addPassingCity = () => {
@@ -110,6 +128,8 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
       seats: Number(seats) || 0,
       routeNumber,
       passingCities,
+      startPoint: startPoint.trim(),
+      endPoint: endPoint.trim(),
       turns,
     };
     setBuses((s) => [newBus, ...s]);
@@ -120,6 +140,8 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
     setRouteNumber('');
     setPassingCities([]);
     setTurns([]);
+    setStartPoint('');
+    setEndPoint('');
     setShowAddBus(false);
   };
 
@@ -127,9 +149,32 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
     <View style={styles.container}>
-      <Text style={styles.heading}>Bus Owner Dashboard</Text>
+      <View style={styles.appHeader}> 
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoSRI}>SRI</Text>
+          <Text style={styles.logoVibes}>Vibes</Text>
+        </View>
+        <Text style={styles.headerSub}>Dashboard</Text>
+      </View>
 
-      <View style={styles.sectionRow}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity onPress={() => setCurrentPage('people')} style={[styles.tabButton, currentPage === 'people' && styles.tabActive]}>
+            <Text style={[styles.tabText, currentPage === 'people' && styles.tabTextActive]}>Manage Drivers</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setCurrentPage('buses')} style={[styles.tabButton, currentPage === 'buses' && styles.tabActive]}>
+            <Text style={[styles.tabText, currentPage === 'buses' && styles.tabTextActive]}>Manage Buses</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setCurrentPage('finance')} style={[styles.tabButton, currentPage === 'finance' && styles.tabActive]}>
+            <Text style={[styles.tabText, currentPage === 'finance' && styles.tabTextActive]}>Finance</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Page content switch */}
+      {currentPage === 'people' && (
+        <>
+          <View style={styles.sectionRow}>
         <View style={styles.sectionCard}>
           <Text style={styles.cardTitle}>Drivers</Text>
           <Text style={styles.cardSub}>{drivers.length} registered</Text>
@@ -138,9 +183,9 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
           <Text style={styles.cardTitle}>Conductors</Text>
           <Text style={styles.cardSub}>{conductors.length} registered</Text>
         </View>
-      </View>
+          </View>
 
-      <View style={styles.formRow}>
+          <View style={styles.formRow}>
         <TextInput style={styles.input} placeholder="Name" value={personName} onChangeText={setPersonName} />
         <TextInput style={styles.input} placeholder="Phone" value={personPhone} onChangeText={setPersonPhone} keyboardType="phone-pad" />
         <View style={{ flexDirection: 'row', marginVertical: 8 }}>
@@ -151,20 +196,20 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
             <Text style={[styles.smallBtnText, personRole === 'conductor' && { color: '#fff' }]}>Conductor</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.primaryButton} onPress={addPerson}>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => { setShowPersonForm(true); setEditingPersonId(null); setPersonName(''); setPersonPhone(''); setPersonNic(''); setPersonAge(''); }}>
           <Text style={styles.primaryButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
 
-        {/* Lists: drivers & conductors with edit/delete */}
-        <View style={{ flexDirection: 'row', marginTop: 12 }}>
+          {/* Lists: drivers & conductors with edit/delete */}
+          <View style={{ flexDirection: 'row', marginTop: 12 }}>
           <View style={{ flex: 1, marginRight: 8 }}>
             <Text style={styles.sectionHeading}>Drivers</Text>
             {drivers.map((d) => (
               <View key={d.id} style={styles.listRow}>
                 <Text>{d.name}</Text>
                 <View style={{ flexDirection: 'row' }}>
-                  <TouchableOpacity onPress={() => { setEditingPersonId(d.id); setPersonName(d.name); setPersonPhone(d.phone || ''); setPersonRole('driver'); }} style={{ marginRight: 8 }}>
+                  <TouchableOpacity onPress={() => { setEditingPersonId(d.id); setPersonNic(d.nic || ''); setPersonName(d.name); setPersonPhone(d.phone || ''); setPersonAge(d.age || ''); setPersonRole('driver'); setShowPersonForm(true); }} style={{ marginRight: 8 }}>
                     <Ionicons name="create-outline" size={18} color={colors.primary} />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => setDrivers((s) => s.filter(x => x.id !== d.id))}>
@@ -180,7 +225,7 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
               <View key={c.id} style={styles.listRow}>
                 <Text>{c.name}</Text>
                 <View style={{ flexDirection: 'row' }}>
-                  <TouchableOpacity onPress={() => { setEditingPersonId(c.id); setPersonName(c.name); setPersonPhone(c.phone || ''); setPersonRole('conductor'); }} style={{ marginRight: 8 }}>
+                  <TouchableOpacity onPress={() => { setEditingPersonId(c.id); setPersonNic(c.nic || ''); setPersonName(c.name); setPersonPhone(c.phone || ''); setPersonAge(c.age || ''); setPersonRole('conductor'); setShowPersonForm(true); }} style={{ marginRight: 8 }}>
                     <Ionicons name="create-outline" size={18} color={colors.primary} />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => setConductors((s) => s.filter(x => x.id !== c.id))}>
@@ -191,89 +236,147 @@ export default function BusOwnerDashboardScreen({ onClose }: Props) {
             ))}
           </View>
         </View>
+        </>
+      )}
 
-      <View style={{ marginTop: 12 }}>
-        <Text style={styles.sectionHeading}>Add / Manage Buses</Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={() => setShowAddBus(true)}>
-          <Text style={styles.primaryButtonText}>Add Bus</Text>
-        </TouchableOpacity>
-      </View>
-
-      {showAddBus && (
+      {showPersonForm && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Express name" value={expressName} onChangeText={setExpressName} />
-          <TextInput style={styles.input} placeholder="Bus number" value={busNumber} onChangeText={setBusNumber} />
-          <TextInput style={styles.input} placeholder="Seats" value={seats} onChangeText={setSeats} keyboardType="number-pad" />
-          <TextInput style={styles.input} placeholder="Route number" value={routeNumber} onChangeText={setRouteNumber} />
-
-          <View style={{ marginTop: 8 }}>
-            <Text style={styles.label}>Passing cities</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Add city" value={cityInput} onChangeText={setCityInput} />
-              <TouchableOpacity style={[styles.smallBtn, { marginLeft: 8 }]} onPress={addPassingCity}>
-                <Text style={styles.smallBtnText}>+</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
-              {passingCities.map((c, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Text>{c}</Text>
-                </View>
-              ))}
-            </View>
+          <Text style={styles.sectionHeading}>{editingPersonId ? 'Edit Person' : 'Register Driver / Conductor'}</Text>
+          <TextInput style={styles.input} placeholder="NIC" value={personNic} onChangeText={setPersonNic} />
+          <TextInput style={styles.input} placeholder="Name" value={personName} onChangeText={setPersonName} />
+          <TextInput style={styles.input} placeholder="Phone" value={personPhone} onChangeText={setPersonPhone} keyboardType="phone-pad" />
+          <TextInput style={styles.input} placeholder="Age" value={personAge} onChangeText={setPersonAge} keyboardType="number-pad" />
+          <View style={{ flexDirection: 'row', marginVertical: 8 }}>
+            <TouchableOpacity onPress={() => setPersonRole('driver')} style={[styles.smallBtn, personRole === 'driver' && styles.smallBtnActive]}>
+              <Text style={[styles.smallBtnText, personRole === 'driver' && { color: '#fff' }]}>Driver</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setPersonRole('conductor')} style={[styles.smallBtn, personRole === 'conductor' && styles.smallBtnActive, { marginLeft: 8 }]}>
+              <Text style={[styles.smallBtnText, personRole === 'conductor' && { color: '#fff' }]}>Conductor</Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={{ marginTop: 8 }}>
-            <Text style={styles.label}>Turns per day</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TextInput style={[styles.input, { flex: 1 }]} placeholder="Number of turns" value={turnsCount} onChangeText={applyTurnsCount} keyboardType="number-pad" />
-            </View>
-            <View style={{ marginTop: 8 }}>
-              {turns.map((t, i) => (
-                <View key={i} style={{ marginBottom: 8, paddingVertical: 6 }}>
-                  <View style={{ flexDirection: 'row' }}>
-                    <TextInput style={[styles.input, { flex: 1 }]} placeholder="Start time (e.g. 08:00)" value={t.start} onChangeText={(v) => updateTurn(i, { start: v })} />
-                    <TextInput style={[styles.input, { flex: 1, marginLeft: 8 }]} placeholder="End time (e.g. 12:00)" value={t.end} onChangeText={(v) => updateTurn(i, { end: v })} />
-                  </View>
-                  <View style={{ flexDirection: 'row', marginTop: 6 }}>
-                    <TouchableOpacity style={[styles.smallBtn, { marginRight: 8 }]} onPress={() => selectDriver(i)}>
-                      <Text style={styles.smallBtnText}>{drivers.find(d => d.id === t.driverId)?.name ?? 'Assign Driver'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.smallBtn} onPress={() => selectConductor(i)}>
-                      <Text style={styles.smallBtnText}>{conductors.find(c => c.id === t.conductorId)?.name ?? 'Assign Conductor'}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
-            <TouchableOpacity style={[styles.secondaryButton]} onPress={() => setShowAddBus(false)}>
+            <TouchableOpacity style={[styles.secondaryButton]} onPress={() => { setShowPersonForm(false); setEditingPersonId(null); }}>
               <Text style={styles.secondaryButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.primaryButton} onPress={addBus}>
-              <Text style={styles.primaryButtonText}>Save Bus</Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={addPerson}>
+              <Text style={styles.primaryButtonText}>{editingPersonId ? 'Save' : 'Add'}</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
 
-      <View style={{ marginTop: 12, flex: 1 }}>
-        <Text style={styles.sectionHeading}>Your Buses</Text>
-        {buses.length === 0 ? (
-          <Text style={{ color: '#666' }}>No buses yet</Text>
-        ) : (
-          buses.map((item) => (
-            <View key={item.id} style={styles.card}>
-              <Text style={styles.cardTitle}>{item.expressName} — {item.busNumber}</Text>
-              <Text style={styles.cardSub}>Seats: {item.seats} | Route: {item.routeNumber}</Text>
-              <Text style={styles.cardSub}>Cities: {item.passingCities.join(', ')}</Text>
-              <Text style={styles.cardSub}>Turns: {item.turns.map((t) => `${t.start}-${t.end}`).join(', ')}</Text>
+      {currentPage === 'buses' && (
+        <>
+          <View style={{ marginTop: 12 }}>
+            <Text style={styles.sectionHeading}>Add / Manage Buses</Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => setShowAddBus(true)}>
+              <Text style={styles.primaryButtonText}>Add Bus</Text>
+            </TouchableOpacity>
+          </View>
+
+          {showAddBus && (
+            <View style={styles.card}>
+              <TextInput style={styles.input} placeholder="Express name" value={expressName} onChangeText={setExpressName} />
+              <TextInput style={styles.input} placeholder="Bus number" value={busNumber} onChangeText={setBusNumber} />
+              <TextInput style={styles.input} placeholder="Seats" value={seats} onChangeText={setSeats} keyboardType="number-pad" />
+              <TextInput style={styles.input} placeholder="Route number" value={routeNumber} onChangeText={setRouteNumber} />
+              <TextInput style={styles.input} placeholder="Start point" value={startPoint} onChangeText={setStartPoint} />
+              <TextInput style={styles.input} placeholder="End point" value={endPoint} onChangeText={setEndPoint} />
+
+              <View style={{ marginTop: 8 }}>
+                <Text style={styles.label}>Passing cities</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TextInput style={[styles.input, { flex: 1 }]} placeholder="Add city" value={cityInput} onChangeText={setCityInput} />
+                  <TouchableOpacity style={[styles.smallBtn, { marginLeft: 8 }]} onPress={addPassingCity}>
+                    <Text style={styles.smallBtnText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                  {passingCities.map((c, idx) => (
+                    <View key={idx} style={styles.tag}>
+                      <Text>{c}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={{ marginTop: 8 }}>
+                <Text style={styles.label}>Turns per day</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TextInput style={[styles.input, { flex: 1 }]} placeholder="Number of turns" value={turnsCount} onChangeText={applyTurnsCount} keyboardType="number-pad" />
+                </View>
+                <View style={{ marginTop: 8 }}>
+                  {turns.map((t, i) => (
+                    <View key={i} style={{ marginBottom: 8, paddingVertical: 6 }}>
+                      <View style={{ flexDirection: 'row' }}>
+                        <TextInput style={[styles.input, { flex: 1 }]} placeholder="Start time (e.g. 08:00)" value={t.start} onChangeText={(v) => updateTurn(i, { start: v })} />
+                        <TextInput style={[styles.input, { flex: 1, marginLeft: 8 }]} placeholder="End time (e.g. 12:00)" value={t.end} onChangeText={(v) => updateTurn(i, { end: v })} />
+                      </View>
+                      <View style={{ flexDirection: 'row', marginTop: 6 }}>
+                        <TouchableOpacity style={[styles.smallBtn, { marginRight: 8 }]} onPress={() => selectDriver(i)}>
+                          <Text style={styles.smallBtnText}>{drivers.find(d => d.id === t.driverId)?.name ?? 'Assign Driver'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.smallBtn} onPress={() => selectConductor(i)}>
+                          <Text style={styles.smallBtnText}>{conductors.find(c => c.id === t.conductorId)?.name ?? 'Assign Conductor'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
+                <TouchableOpacity style={[styles.secondaryButton]} onPress={() => setShowAddBus(false)}>
+                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.primaryButton} onPress={addBus}>
+                  <Text style={styles.primaryButtonText}>Save Bus</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          ))
-        )}
-      </View>
+          )}
+
+          <View style={{ marginTop: 12, flex: 1 }}>
+            <Text style={styles.sectionHeading}>Your Buses</Text>
+            {buses.length === 0 ? (
+              <Text style={{ color: '#666' }}>No buses yet</Text>
+            ) : (
+              buses.map((item) => (
+                <View key={item.id} style={styles.card}>
+                  <Text style={styles.cardTitle}>{item.expressName} — {item.busNumber}</Text>
+                  <Text style={styles.cardSub}>Seats: {item.seats} | Route: {item.routeNumber}</Text>
+                  <Text style={styles.cardSub}>From: {item.startPoint} → {item.endPoint}</Text>
+                  <Text style={styles.cardSub}>Cities: {item.passingCities.join(', ')}</Text>
+                  <Text style={styles.cardSub}>Turns: {item.turns.map((t) => `${t.start}-${t.end}`).join(', ')}</Text>
+                </View>
+              ))
+            )}
+          </View>
+        </>
+      )}
+
+      {currentPage === 'finance' && (
+        <View style={{ marginTop: 12, flex: 1 }}>
+          <Text style={styles.sectionHeading}>Finance</Text>
+          <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+            <TouchableOpacity style={[styles.smallBtn, { marginRight: 8 }]} onPress={() => { /* filter today */ }}><Text style={styles.smallBtnText}>Today</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.smallBtn, { marginRight: 8 }]} onPress={() => { /* yesterday */ }}><Text style={styles.smallBtnText}>Yesterday</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.smallBtn, { marginRight: 8 }]} onPress={() => { /* week */ }}><Text style={styles.smallBtnText}>Past Week</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.smallBtn]} onPress={() => { /* month */ }}><Text style={styles.smallBtnText}>Past Month</Text></TouchableOpacity>
+          </View>
+          <Text style={{ color: '#666' }}>No booking data available yet. Connect bookings to calculate income per turn.</Text>
+        </View>
+      )}
+
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => {
+          if (currentPage === 'people') { setShowPersonForm(true); setEditingPersonId(null); }
+          else if (currentPage === 'buses') { setShowAddBus(true); }
+        }}
+      >
+        <Text style={{ color: '#fff', fontSize: 28 }}>+</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Text style={styles.closeText}>Close</Text>
@@ -305,6 +408,16 @@ const styles = StyleSheet.create({
   tag: { backgroundColor: '#EEF6FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, marginRight: 8, marginBottom: 6 },
   listRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6, color: colors.textDark },
+  appHeader: { backgroundColor: colors.primary, paddingTop: 50, paddingBottom: 16, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 8, marginBottom: 12 },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  logoSRI: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-ExtraBold' },
+  logoVibes: { fontSize: 28, color: colors.white, fontFamily: 'Montserrat-SemiBold', marginLeft: 4 },
+  headerSub: { color: colors.white, marginTop: 6, fontSize: 14, opacity: 0.95 },
+  tabButton: { paddingVertical: 8, paddingHorizontal: 12, marginRight: 6, borderRadius: 8, backgroundColor: 'transparent' },
+  tabActive: { backgroundColor: '#E8F4FF' },
+  tabText: { color: colors.textDark, fontWeight: '600' },
+  tabTextActive: { color: colors.primary },
+  floatingButton: { position: 'absolute', right: 18, bottom: 86, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', elevation: 6 },
   closeButton: { marginTop: 12, alignItems: 'center' },
   closeText: { color: colors.primary, fontWeight: '600' },
 });
