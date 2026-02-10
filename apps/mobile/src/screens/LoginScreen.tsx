@@ -1,11 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [fontsLoaded] = useFonts({
+    'Montserrat-ExtraBold': require('../../assets/fonts/Montserrat-ExtraBold.ttf'),
+    'Montserrat-SemiBold': require('../../assets/fonts/Montserrat-SemiBold.ttf'),
+    'Montserrat-Bold': require('../../assets/fonts/Montserrat-Bold.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
   return (
     <LinearGradient
       colors={[colors.primary, colors.primary]}
@@ -14,7 +24,8 @@ export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logo}>SRiVibes</Text>
+          <Text style={styles.logoSRI}>SRI</Text>
+          <Text style={styles.logoVibes}>Vibes</Text>
         </View>
 
         {/* Login Form Placeholder */}
@@ -52,24 +63,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 60,
   },
-  logo: {
+  logoSRI: {
     fontSize: 40,
-    fontWeight: 'bold',
     color: colors.text,
     letterSpacing: 2,
+    fontFamily: 'Montserrat-ExtraBold',
+  },
+  logoVibes: {
+    fontSize: 40,
+    color: colors.text,
+    letterSpacing: 2,
+    fontFamily: 'Montserrat-SemiBold',
   },
   formContainer: {
     width: '100%',
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     color: colors.text,
     marginBottom: 32,
     textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
   },
   inputPlaceholder: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -83,6 +102,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16,
     opacity: 0.8,
+    fontFamily: 'Montserrat-SemiBold',
   },
   button: {
     backgroundColor: colors.text,
@@ -99,13 +119,14 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.primary,
     fontSize: 18,
-    fontWeight: '600',
     textAlign: 'center',
+    fontFamily: 'Montserrat-SemiBold',
   },
   linkText: {
     color: colors.text,
     fontSize: 14,
     textAlign: 'center',
     opacity: 0.9,
+    fontFamily: 'Montserrat-SemiBold',
   },
 });

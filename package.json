@@ -14,5 +14,8 @@
   },
   "devDependencies": {
     "turbo": "^1.12.5"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.4"
   }
 }

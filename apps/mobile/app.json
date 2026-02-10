@@ -4,12 +4,10 @@
     "slug": "srivibes",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#008CD8"
+      "backgroundColor": "#008CD8",
+      "resizeMode": "contain"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,14 +17,7 @@
       "bundleIdentifier": "com.srivibes.app"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#008CD8"
-      },
       "package": "com.srivibes.app"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }

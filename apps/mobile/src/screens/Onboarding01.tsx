@@ -1,11 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts } from 'expo-font';
 import { colors } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Onboarding01({ onNext }: { onNext: () => void }) {
+  const [fontsLoaded] = useFonts({
+    'Montserrat-ExtraBold': require('../../assets/fonts/Montserrat-ExtraBold.ttf'),
+    'Montserrat-SemiBold': require('../../assets/fonts/Montserrat-SemiBold.ttf'),
+    'Montserrat-Bold': require('../../assets/fonts/Montserrat-Bold.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
   return (
     <LinearGradient
       colors={[colors.primary, colors.primary]}
@@ -14,7 +24,8 @@ export default function Onboarding01({ onNext }: { onNext: () => void }) {
       <View style={styles.content}>
         {/* Logo/Brand Area */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logo}>SRiVibes</Text>
+          <Text style={styles.logoSRI}>SRI</Text>
+          <Text style={styles.logoVibes}>Vibes</Text>
         </View>
 
         {/* Main Content */}
@@ -25,7 +36,7 @@ export default function Onboarding01({ onNext }: { onNext: () => void }) {
           </View>
           
           <View style={styles.textContainer}>
-            <Text style={styles.title}>Welcome to SRiVibes</Text>
+            <Text style={styles.title}>Welcome to SRIVibes</Text>
             <Text style={styles.subtitle}>
               Discover amazing restaurants, hotels, and book bus tickets seamlessly
             </Text>
@@ -64,14 +75,22 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   logoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 40,
   },
-  logo: {
+  logoSRI: {
     fontSize: 32,
-    fontWeight: 'bold',
     color: colors.text,
     letterSpacing: 2,
+    fontFamily: 'Montserrat-ExtraBold',
+  },
+  logoVibes: {
+    fontSize: 32,
+    color: colors.text,
+    letterSpacing: 2,
+    fontFamily: 'Montserrat-SemiBold',
   },
   mainContent: {
     flex: 1,
@@ -99,10 +118,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
     color: colors.text,
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
   },
   subtitle: {
     fontSize: 16,
@@ -110,6 +129,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     opacity: 0.9,
+    fontFamily: 'Montserrat-SemiBold',
   },
   bottomContainer: {
     alignItems: 'center',
@@ -144,11 +164,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.primary,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Montserrat-SemiBold',
   },
   skipText: {
     color: colors.text,
     fontSize: 16,
     opacity: 0.8,
+    fontFamily: 'Montserrat-SemiBold',
   },
 });
